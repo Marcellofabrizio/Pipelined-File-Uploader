@@ -3,6 +3,8 @@ const { createWriteStream } = require("fs");
 const { join } = require("path");
 const { logger, pipelineAsync } = require("./utils.js");
 
+const ON_UPLOAD_EVENT = "file-uploaded";
+
 class UploadHandler {
   #io;
   #socketId;
@@ -27,9 +29,11 @@ class UploadHandler {
       for await (const item of data) {
         const size = item.length;
         logger.info(`File ${filename} got ${size} bytes to ${this.#socketId}`);
+
+        this.#io.to(this.#socketId).emit(ON_UPLOAD_EVENT, size);
+
         yield item;
       }
-      console.log(data);
     }
 
     return handleData.bind(this);
